@@ -2,11 +2,15 @@
 #include <thread>
 #include <chrono>
 #include <random>
+#include <mutex>
+#include "LockGuard.h"
 
 /*
-    Implement c++11 threading example
-    2-3 threads running
+    Use your implementation of c++11 lock_guard (NOT std::lock_guard)
+    to protect a common resource in your threading example from #3 and #4
 */
+
+std::mutex mut;
 
 int generateSeconds() {
     std::random_device rd;
@@ -16,7 +20,8 @@ int generateSeconds() {
 }
 
 void sleep(int sec) {
-    // std::cout << "thread sleeps for " << sec << " seconds" << std::endl;
+    codingChallenge::lock_guard l(mut);
+    std::cout << "thread sleeps for " << sec << " seconds" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(sec));
 }
 

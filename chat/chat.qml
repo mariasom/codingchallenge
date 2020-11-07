@@ -1,20 +1,136 @@
-// #! env qml
-import QtQuick 2.0
+#! env qml
+import QtQuick 2.2
+import QtQuick.Controls 1.2
+import QtQuick.Layouts 1.3
+import QtQuick.Window 2.2
+import chatserver.backend 1.0
 
-// Item {
-//    function myQmlFunction(msg: string) : string {
-//        console.log("Got message:", msg)
-//       return "some return value"
-//    }
-//}
+Window {
+//    layer.enabled: true
 
-Rectangle {
-    width: 200
-    height: 100
-    color: "red"
+    width: 400
+    height: 520
 
-    Text {
-        anchors.centerIn: parent
-        text: "Hello, World!"
+    ChatServer {
+        id: server
     }
+
+    Column {
+        spacing: 5
+        Rectangle {
+            id: userOne
+
+            width: 400
+            height: 250
+
+            ColumnLayout {
+                anchors.fill: parent
+
+                Text{
+                    id: username
+                    text: "User1!"
+                    font.family: "Helvetica"
+                    font.pointSize: 15
+                    font.bold: true
+                    color: "blue"
+
+                }
+
+                TextArea {
+                    id: textArea1
+                    Layout.fillWidth: true
+                    readOnly: true
+                    textFormat: TextEdit.RichText
+                }
+
+                RowLayout {
+                    id: rowLayout1
+                    // anchors.bottom: parent
+                    TextField {
+                        id: textf1
+                        placeholderText: "Enter message"
+                        Layout.fillWidth: true
+                    }
+                    Button {
+                        id: button1
+                        text: "Send"
+                        onClicked: { 
+                            if (textf1.length != 0) {
+                                console.log("sending msg: " + textf1.text);
+                                sendmessage(textArea2, username.text, textf1.text, "#FF0000");
+                                sendmessage(textArea1 , username.text, textf1.text, "#00FF00");
+                                clearTextField(textf1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        Rectangle {
+            width: 400
+            height: 5
+            color: "black"
+        }
+
+        Rectangle {
+            id: userTwo
+
+            y:305
+            width: 400
+            height: 250
+
+            ColumnLayout {
+                // anchors.fill: parent
+
+                Text{
+                    id: username2
+                    text: "User2!"
+                    font.family: "Helvetica"
+                    font.pointSize: 15
+                    font.bold: true
+                    color: "blue"
+
+                }
+
+                TextArea {
+                    id: textArea2
+                    Layout.fillWidth: true
+                    readOnly: true
+                    textFormat: TextEdit.RichText
+                }
+
+                RowLayout {
+                    id: rowLayout2
+                    // anchors.bottom: parent
+                    TextField {
+                        id: textf2
+                        placeholderText: "Enter message"
+                        Layout.fillWidth: true
+                    }
+                    Button {
+                        id: button2
+                        text: "Send"
+                        onClicked: { 
+                            if (textf2.length != 0) {
+                                console.log("sending msg: " + textf2.text);
+                                sendmessage(textArea1 , username2.text, textf2.text, "#FF0000");
+                                sendmessage(textArea2 , username2.text, textf2.text, "#00FF00");
+                                clearTextField(textf2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // function sendmessage( id, user, message, color){
+    //                             message = "<p><b style='color:" + color + ";' >" + user + ": </b>" + message + "</p>"
+    //                             id.append(message);
+    //                         }
+    // function clearTextField(id){
+    //                         console.log(id);
+    //                         id.remove(0,id.length);
+    //                     }
 }

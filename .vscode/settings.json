@@ -45,6 +45,16 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "thread": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "bitset": "cpp",
+        "cstring": "cpp",
+        "list": "cpp",
+        "functional": "cpp",
+        "iterator": "cpp",
+        "map": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "regex": "cpp",
+        "cinttypes": "cpp"
     }
 }

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
+#include <functional>
 
 //
 // supporting tools and software
@@ -50,9 +50,8 @@ auto exit_command = R"(
 )";
 
 class Controller {
-public:
-    bool help(rapidjson::Value &payload)
-    {
+ public:
+    bool help(rapidjson::Value &payload) {
         cout << "Controller::help: command: ";
 
         // implement
@@ -60,15 +59,13 @@ public:
         return true;
     }
 
-    bool exit(rapidjson::Value &payload)
-    {
+    bool exit(rapidjson::Value &payload) {
         cout << "Controller::exit: command: \n";
 
         // implement
 
         return true;
     }
-
     // implement 3-4 more commands
 };
 
@@ -77,20 +74,17 @@ public:
 typedef std::function<bool(rapidjson::Value &)> CommandHandler;
 
 class CommandDispatcher {
-public:
+ public:
     // ctor - need impl
-    CommandDispatcher()
-    {
+    CommandDispatcher() {
     }
 
     // dtor - need impl
-    virtual ~CommandDispatcher()
-    {
+    virtual ~CommandDispatcher() {
         // question why is it virtual? Is it needed in this case?
     }
 
-    bool addCommandHandler(std::string command, CommandHandler handler)
-    {
+    bool addCommandHandler(std::string command, CommandHandler handler) {
         cout << "CommandDispatcher: addCommandHandler: " << command << std::endl;
 
         // implement

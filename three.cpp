@@ -1,72 +1,78 @@
-//  Use c++11 std::condition_signal in solution from #2 to synchronize threads
-//       -- Psuedo Code --
-//       main:
-//         1) start: thread 1, thread 2, thread 3
-//         2) all threads block on condition_signal
-//         3) main signals condition_signal
-//         4) join all threads to prevent exit main // gimmee
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <random>
+#include <mutex>
+#include <condition_variable>
 
-//         thread 1:
-//            break from condition_signal due to step 3
-//            sleep (random(1,5))
-//            signal thread 2
-//            wait on condition_signal
+/* 
+	a/ zozeniem si linter, ked bude nieco skaredo odsadene vyhovorim sa nan
+    b/ 
+    https://stackoverflow.com/questions/35252119/stdlock-guard-example-explanation-on-why-it-works
+    The mutex is always the same one, it has nothing to do with the scope. The point of lock_guard is just to make locking and unlocking the mutex easier for you. 
+    For example, if you manually lock/unlock, but your function throws an exception somewhere in the middle, it will never reach the unlock statement. 
+    So, doing it the manual way you have to make sure that the mutex is always unlocked. 
+    On the other hand, the lock_guard object gets destroyed automatically whenever the function is exited – regardless how it is exited.
+*/
 
-//        example output:
-//          main: starting all threads
-//          thread1: starting, waiting.
-//          thread2: starting, waiting.
-//          thread3: starting, waiting.
-//          main: starting thread 1.
-//          thread1: signal received, doing work ....
-//          thread1: done with work, signal next thread
-//          thread2: signal received, doing work ....
-//          thread2: done with work, signal next thread
+/*
+ Use c++11 std::condition_signal in solution from #2 to synchronize threads
+      -- Psuedo Code --
+      main:
+        1) start: thread 1, thread 2, thread 3
+        2) all threads block on condition_signal - dokazem blocknut uspaty thread?
+        3) main signals condition_signal  
+        4) join all threads to prevent exit main // gimmee
 
-//          on and on and on until you CTRL-C the program
-#include<iostream> 
-#include<thread>
-#include<vector>
-#include<mutex>
-#include<condition_variable>
-#include<stdlib.h>     
-#include<time.h>       
+        thread 1:
+           break from condition_signal due to step 3
+           sleep (random(1,5))
+           signal thread 2
+           wait on condition_signal
 
-int sum = 0;
-bool count = false;
+       example output:
+         main: starting all threads
+         thread1: starting, waiting.
+         thread2: starting, waiting.
+         thread3: starting, waiting.
+         main: starting thread 1.
+         thread1: signal received, doing work ....
+         thread1: done with work, signal next thread
+         thread2: signal received, doing work ....
+         thread2: done with work, signal next thread
+
+         on and on and on until you CTRL-C the program
+*/
+bool blocked = false;
+
 std::mutex m;
 std::condition_variable cv;
 
-void multiply(std::vector<int> row, std::vector<int> v ) {
-    std::unique_lock<std::mutex> ul(m);
-    cv.wait(ul, []{return count = true;});
-    int result = 0; 
-    if (row.size() == v.size()) {
-        for(int i = 0; i < row.size(); i++) 
-            result += row[i]*v[i]; 
-    std::cout << "vector:" << result << std::endl;
-    sum+= result;
-    }
+int generateSeconds() {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int> dist(5, 10);
+    return dist(mt);
+}
+
+// sends thread to sleep for X seconds
+void sleep(int sec) {
+    std::unique_lock<std::mutex> lk(m);
+    cv.wait(lk, []{return blocked == true;});
+    std::cout << "thread sleeps for " << sec << " seconds" << blocked << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(sec));
+    
     cv.notify_one();
 }
 
-int main () {
-    // matrix and vector multiplication
-    std::vector<std::vector<int>> matrix = {{1,2,3},{4,5,6},{7,8,9}}; // matrix
-    std::vector<int> v = {2,4,6}; // vector
+int main() {
+    std::thread one(sleep, generateSeconds());
+    std::thread two(sleep, generateSeconds());
+    std::thread three(sleep, generateSeconds());
 
-    std::thread one(multiply, matrix[0], v);
-    //std::this_thread::sleep_for(std::chrono::seconds(rand()%5 + 1));
-    std::thread two(multiply, matrix[1], v);
-    //std::this_thread::sleep_for(std::chrono::seconds(rand()%5 + 1));
-    std::thread three(multiply, matrix[2], v);
-
-    count = true;
-    
     one.join();
     two.join();
     three.join();
-    std::cout << "Sum of result vector elements: " << sum << std::endl;
 
     return 0;
-} 
+}
