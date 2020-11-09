@@ -20,7 +20,7 @@
       -- Psuedo Code --
       main:
         1) start: thread 1, thread 2, thread 3
-        2) all threads block on condition_signal - dokazem blocknut uspaty thread?
+        2) all threads block on condition_signal
         3) main signals condition_signal  
         4) join all threads to prevent exit main // gimmee
 
@@ -55,13 +55,11 @@ int generateSeconds() {
     return dist(mt);
 }
 
-// sends thread to sleep for X seconds
 void sleep(int sec) {
     std::unique_lock<std::mutex> lk(m);
     cv.wait(lk, []{return blocked == true;});
-    std::cout << "thread sleeps for " << sec << " seconds" << blocked << std::endl;
+    std::cout << "thread sleeps for " << sec << " seconds" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(sec));
-    
     cv.notify_one();
 }
 

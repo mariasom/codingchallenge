@@ -2,34 +2,51 @@
 #define CHATSERVER_H
 
 #include <QObject>
-#include <string>
+#include <QString>
 #include <map>
 #include <iostream>
+#include <utility>
 
-struct client {
-    std::string userID;
-    std::string username;
-};
+// struct client {
+//    int userID;
+//    std::string userName;
+//    std::string nameColor;
+//};
 
 class ChatServer: public QObject {
     Q_OBJECT
 
-    // Q_PROPERTY(client id READ id WRITE setID NOTIFY register);
+    Q_PROPERTY(QString userName READ userName WRITE setUserName NOTIFY userNameChanged);
+    Q_PROPERTY(QString message READ message WRITE setMessage NOTIFY messageChanged);
 
-    // Q_PROPERTY();
-    // Q_PROPERTIES();
+    // Q_INVOKABLE void reg(std::string from) {
+    //     std::cout << "user" << from << "sent message\n";
+    //     emit getUser(from);
+    // }
 
-    // Q_INVOCABLE register();
-    // Q_INVOCABLE sendMessage();
-
+    // Q_INVOKABLE void sendMessage(std::string msg) {
+    //     std::cout << "message" << msg << "recieved\n";
+    //     emit getMessage(msg);
+    // }
  signals:
-        // void update(client c, std::string from, std::string);
+    // void update();
+    void userNameChanged();
+    void messageChanged();
+
+ public slots:
+    // void buttonClicked();
 
  public:
     explicit ChatServer(QObject *parent = nullptr);
+    ~ChatServer() {}
+    QString userName();
+    QString message();
+    void setUserName(const QString &userName);
+    void setMessage(const QString &message);
 
  private:
-        // std::map<std::string, struct client> clients_;
+    QString m_user;
+    QString m_msg;
 };
 
 #endif   // CHATSERVER_H
