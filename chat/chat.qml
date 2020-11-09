@@ -44,7 +44,7 @@ Window {
 
                 RowLayout {
                     id: rowLayout1
-                    // anchors.bottom: parent
+                    anchors.bottom: parent
                     TextField {
                         id: textf1
                         placeholderText: "Enter message"
@@ -103,7 +103,7 @@ Window {
 
                 RowLayout {
                     id: rowLayout2
-                    // anchors.bottom: parent
+                    anchors.bottom: parent
                     TextField {
                         id: textf2
                         placeholderText: "Enter message"
@@ -129,11 +129,10 @@ Window {
     }
 
     function sendmessage( id, user, message, color){
-                                message = "<p><b style='color:" + color + ";' >" + user + ": </b>" + message + "</p>"
-                                id.append(message);
-                            }
+        message = "<p><b style='color:" + color + ";' >" + user + ": </b>" + message + "</p>"
+        id.append(message);
+    }
     function clearTextField(id){
-                            console.log(id);
-                            id.remove(0,id.length);
-                            }
+        id.remove(0,id.length);
+    }
 }

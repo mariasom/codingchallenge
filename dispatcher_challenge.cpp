@@ -51,12 +51,30 @@ auto exit_command = R"(
  }
 )";
 
-class Controller {
+auto clear_command = R"(
+ {
+  "command":"clear",
+  "payload": {
+     "action":"Deleting all created commands on user request."
+  }
+ }
+)";
+
+auto list_command = R"(
+ {
+  "command":"list",
+  "payload": {
+     "action":"Listing all commands."
+  }
+ }
+)";
+
+class Controller: public CommandDispatcher {
  public:
     bool help(rapidjson::Value &payload) {
         cout << "Controller::help: command: ";
 
-        Value::MemberIterator help = payload.FindMember("help");
+        Value::MemberIterator help = payload.FindMember("usage");
         cout << help->value.GetString() << endl;
 
         return true;
@@ -64,9 +82,27 @@ class Controller {
 
     bool exit(rapidjson::Value &payload) {
         cout << "Controller::exit: command: \n";
-        
+
         Value::MemberIterator reason = payload.FindMember("reason");
         cout << reason->value.GetString() << endl;
+
+        return true;
+    }
+
+    bool clear(rapidjson::Value &payload) {
+        cout << "Controller::clear: command: \n";
+
+        Value::MemberIterator reason = payload.FindMember("action");
+        CommandDispatcher::~CommandDispatcher();
+
+        return true;
+    }
+
+    bool list(rapidjson::Value &payload) {
+        cout << "Controller::list: command: \n";
+
+        Value::MemberIterator reason = payload.FindMember("action");
+        
 
         return true;
     }
@@ -88,6 +124,7 @@ class CommandDispatcher {
     virtual ~CommandDispatcher() {
         command_handlers_.clear();
         // question why is it virtual? Is it needed in this case?
+        // -> because 
     }
 
     bool addCommandHandler(std::string command, CommandHandler handler) {
@@ -104,43 +141,33 @@ class CommandDispatcher {
 
         Document document;
         if (document.Parse<0>(command_json.c_str()).HasParseError())
-            return 1;
+            return false;
 
-        assert(document.HasMember("command"));
+        if (document.HasMember("command")) {
+            const std::string commandName(
+                document.FindMember("command")->value.GetString());
+            Value::MemberIterator command = document.FindMember("command");
+            cout << commandName << endl;
+            Value::MemberIterator payload = document.FindMember("payload");
 
-        const std::string commandName(
-            document.FindMember("command")->value.GetString());
-        Value::MemberIterator command = document.FindMember("command");
-        cout << commandName << endl;
-        Value::MemberIterator payload = document.FindMember("payload");
-
-        if (command_handlers_.find(commandName) != command_handlers_.end()) {
-            if (commandName == "help")
-                Controller::help(payload->value);
-            else if (commandName == "exit")
-                Controller::exit(payload->value);
-           /// command_handlers_[commandName]->()
+            if (command_handlers_.find(commandName) != command_handlers_.end()) {
+                /* 
+                if (commandName == "help")
+                    Controller::help(payload->value);
+                else if (commandName == "exit")
+                    Controller::exit(payload->value);
+                else if (commandName == "clear")
+                    Controller::clear(payload->value);
+                else if (commandName == "list")
+                    Controller::list(payload->value);
+                */
+            } else {
+                cerr << "command: \'" << commandName << "\' not found" << endl;
+            }
         } else {
-            cerr << "command: \'" << commandName << "\' not found" << endl;
-            //CommandHandler handler;
-            //addCommandHandler(commandName, handler(payload));
+            cerr << "entered in wrong format." << endl;
+            return false;
         }
-
-        /*Document document;
-        if (document.Parse<0>(command_json.c_str()).HasParseError())
-            return 1;
-        assert(document.HasMember("command"));
-        Value::MemberIterator command = document.FindMember("command");
-        cout << command->value.GetString() << endl;
-        Value::MemberIterator pay = document.FindMember("payload");
-
-        if (command_handlers_.find(command->value.GetString()) != command_handlers_.end()){
-            cout << "key found" << endl;
-        }
-        else {
-            cout << "key not found" << endl;
-        }*/
-
         return true;
     }
 
@@ -164,16 +191,16 @@ int main()
 
     CommandDispatcher command_dispatcher;
     Controller controller;             // controller class of functions to "dispatch" from Command Dispatcher
-    //CommandHandler handler;
+    CommandHandler handler;
     // Implement
     // add command handlers in Controller class to CommandDispatcher using addCommandHandler
 
-    // command_dispatcher.addCommandHandler(std::string("help"), handler(help_command));
-    // command_dispatcher.addCommandHandler(std::string("exit"), handler(exit_command);
+    // command_dispatcher.addCommandHandler(std::string("help"), CommandHandler});
+    // command_dispatcher.addCommandHandler(std::string("exit"), CommandHandler});
     // gimme ...
     // command line interface
     string command;
-    while( ! g_done ) {
+    while ( !g_done ) {
         cout << "COMMANDS: {\"command\":\"exit\", \"payload\":{\"reason\":\"User requested exit.\"}}\n";
         cout << "\tenter command : ";
         getline(cin, command);

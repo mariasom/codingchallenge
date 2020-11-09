@@ -5,16 +5,6 @@
 #include <mutex>
 #include <condition_variable>
 
-/* 
-	a/ zozeniem si linter, ked bude nieco skaredo odsadene vyhovorim sa nan
-    b/ 
-    https://stackoverflow.com/questions/35252119/stdlock-guard-example-explanation-on-why-it-works
-    The mutex is always the same one, it has nothing to do with the scope. The point of lock_guard is just to make locking and unlocking the mutex easier for you. 
-    For example, if you manually lock/unlock, but your function throws an exception somewhere in the middle, it will never reach the unlock statement. 
-    So, doing it the manual way you have to make sure that the mutex is always unlocked. 
-    On the other hand, the lock_guard object gets destroyed automatically whenever the function is exited – regardless how it is exited.
-*/
-
 /*
  Use c++11 std::condition_signal in solution from #2 to synchronize threads
       -- Psuedo Code --
@@ -43,34 +33,38 @@
 
          on and on and on until you CTRL-C the program
 */
-bool blocked = false;
+bool generating = true;
+int seconds = 0;
 
 std::mutex m;
 std::condition_variable cv;
 
-int generateSeconds() {
+void generateSeconds() {
+    generating = true;
+    std::cout << "generating seconds" << std::endl;
     std::random_device rd;
     std::mt19937 mt(rd());
     std::uniform_int_distribution<int> dist(5, 10);
-    return dist(mt);
+    seconds = dist(mt);
+    generating = false;
+    cv.notify_one();
 }
 
-void sleep(int sec) {
+void sleep() {
     std::unique_lock<std::mutex> lk(m);
-    cv.wait(lk, []{return blocked == true;});
-    std::cout << "thread sleeps for " << sec << " seconds" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(sec));
+    cv.wait(lk, []{return generating == false && seconds != 0;});
+    std::cout << "thread sleeps for " << seconds << " seconds" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(seconds));
+    lk.unlock();
     cv.notify_one();
 }
 
 int main() {
-    std::thread one(sleep, generateSeconds());
-    std::thread two(sleep, generateSeconds());
-    std::thread three(sleep, generateSeconds());
+    std::thread one(generateSeconds);
+    std::thread two(sleep);
 
     one.join();
     two.join();
-    three.join();
 
     return 0;
 }
